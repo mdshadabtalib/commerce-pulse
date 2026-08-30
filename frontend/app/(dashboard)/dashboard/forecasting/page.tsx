@@ -4,8 +4,6 @@ import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TrendingUp, Target, Zap, AlertCircle } from 'lucide-react';
 import {
-  LineChart,
-  Line,
   Area,
   AreaChart,
   XAxis,
@@ -130,7 +128,7 @@ export default function ForecastingPage() {
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
               }}
-              formatter={(value: number | null) => value !== null ? formatCurrency(value) : 'N/A'}
+              formatter={(value) => typeof value === 'number' ? formatCurrency(value) : 'N/A'}
             />
             <Legend />
             <ReferenceLine x="Day 30" stroke="#ef4444" strokeDasharray="3 3" label="Today" />

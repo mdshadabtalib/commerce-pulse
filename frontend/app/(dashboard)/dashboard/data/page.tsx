@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useQuery } from '@tantml:react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Database, CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
 
 import { formatTimeAgo, formatCompactNumber } from '@/lib/utils';
@@ -79,7 +79,7 @@ export default function DataPage() {
   const kpis = data?.kpis;
   const datasets = data?.datasets || [];
 
-  const statusConfig = {
+  const statusConfig: Record<Dataset['status'], { icon: typeof Clock; color: 'success' | 'info' | 'destructive' | 'warning' | 'secondary'; label: string }> = {
     ready: { icon: CheckCircle, color: 'success', label: 'Ready' },
     importing: { icon: RefreshCw, color: 'info', label: 'Syncing' },
     failed: { icon: XCircle, color: 'destructive', label: 'Failed' },
@@ -155,9 +155,9 @@ export default function DataPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold">{dataset.name}</h3>
-                          <Badge variant={statusConfig[dataset.status]?.color as any} size="sm" className="gap-1">
+                          <Badge variant={statusConfig[dataset.status].color} size="sm" className="gap-1">
                             <StatusIcon className="h-3 w-3" />
-                            {statusConfig[dataset.status]?.label}
+                            {statusConfig[dataset.status].label}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">

@@ -11,7 +11,6 @@ import {
   ChevronRight,
   Sparkles,
   LineChart,
-  Users,
   Package,
   Globe,
 } from 'lucide-react';

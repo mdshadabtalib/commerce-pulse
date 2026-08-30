@@ -28,7 +28,6 @@ import {
   Legend,
 } from 'recharts';
 
-import { get } from '@/lib/api';
 import { formatCurrency, formatCompactNumber } from '@/lib/utils';
 import { KPICard } from '@/components/dashboard/kpi-card';
 import { ChartWrapper } from '@/components/dashboard/chart-wrapper';
@@ -41,7 +40,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function SalesPage() {
   const [dateRange, setDateRange] = React.useState('30d');

@@ -13,7 +13,6 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-import { get } from '@/lib/api';
 import { formatCurrency, formatCompactNumber, formatTimeAgo } from '@/lib/utils';
 import { KPICard } from '@/components/dashboard/kpi-card';
 import { Button } from '@/components/ui/button';

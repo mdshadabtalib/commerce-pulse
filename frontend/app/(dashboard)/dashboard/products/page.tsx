@@ -195,7 +195,7 @@ export default function ProductsPage() {
                       <td className="py-4 text-right">{product.total_orders}</td>
                       <td className="py-4 text-right font-medium">{formatCurrency(product.total_revenue)}</td>
                       <td className="py-4 text-right">
-                        {product.growth_rate !== undefined && (
+                        {product.growth_rate != null && (
                           <Badge variant={product.growth_rate > 0 ? 'success' : 'destructive'} size="sm">
                             {product.growth_rate > 0 ? '+' : ''}{(product.growth_rate * 100).toFixed(1)}%
                           </Badge>

@@ -81,7 +81,7 @@ class Settings(BaseSettings):
 
     MAIL_USERNAME: str = "apikey"
     MAIL_PASSWORD: SecretStr = Field(default=SecretStr(""))
-    MAIL_FROM: EmailStr = Field(default=EmailStr("no-reply@commercepulse.ai"))
+    MAIL_FROM: EmailStr = Field(default="no-reply@commercepulse.ai")
     MAIL_FROM_NAME: str = "CommercePulse"
     MAIL_PORT: int = 587
     MAIL_SERVER: str = "smtp.sendgrid.net"

@@ -1,16 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { QueryProvider } from '@/components/providers/query-provider';
 import './globals.css';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-  preload: true,
-});
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || 'CommercePulse';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -120,10 +112,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={inter.variable}
     >
       <body
-        className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}
+        className="min-h-screen bg-background text-foreground antialiased"
         suppressHydrationWarning
       >
         <ThemeProvider

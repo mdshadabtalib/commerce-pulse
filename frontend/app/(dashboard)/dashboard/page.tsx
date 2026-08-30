@@ -22,10 +22,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 
-import { get } from '@/lib/api';
 import { formatCurrency, formatCompactNumber } from '@/lib/utils';
 import { KPICard } from '@/components/dashboard/kpi-card';
 import { ChartWrapper } from '@/components/dashboard/chart-wrapper';

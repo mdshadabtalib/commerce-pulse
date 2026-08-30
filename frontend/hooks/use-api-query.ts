@@ -5,6 +5,7 @@ import {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import type { ApiError } from '@/types';
 import { get, AxiosRequestConfig } from '@/lib/api';
@@ -32,7 +33,6 @@ export function useApiQuery<
     showErrorToast = false,
     errorMessage,
     axiosConfig,
-    onError,
     ...queryOptions
   } = options;
 
@@ -43,23 +43,25 @@ export function useApiQuery<
     return get<TQueryFnData>(url, axiosConfig);
   };
 
-  return useQuery<TQueryFnData, TError, TData>({
+  const result = useQuery<TQueryFnData, TError, TData>({
     queryKey,
     queryFn,
-    onError: (error) => {
-      if (showErrorToast) {
-        const message =
-          errorMessage !== undefined
-            ? typeof errorMessage === 'function'
-              ? errorMessage(error as unknown as ApiError)
-              : errorMessage
-            : (error as unknown as ApiError).message || 'Failed to load data. Please try again.';
-        toast.error(message);
-      }
-      onError?.(error);
-    },
     ...queryOptions,
   });
+
+  useEffect(() => {
+    if (!result.isError || !showErrorToast) return;
+    const error = result.error as unknown as ApiError;
+    const message =
+      errorMessage !== undefined
+        ? typeof errorMessage === 'function'
+          ? errorMessage(error)
+          : errorMessage
+        : error.message || 'Failed to load data. Please try again.';
+    toast.error(message);
+  }, [errorMessage, result.error, result.isError, showErrorToast]);
+
+  return result;
 }
 
 export function useListQuery<
@@ -116,7 +118,7 @@ export function usePaginatedQuery<
     }
   );
 
-  const { isFetching, isRefetching, fetchStatus } = result;
+  const { isRefetching, fetchStatus } = result;
 
   const isLoadingInitial = !result.data && fetchStatus === 'fetching';
   const isLoadingMore = !!result.data && fetchStatus === 'fetching' && !isRefetching;
@@ -153,7 +155,7 @@ export function getQueryState<T>(
 ): QueryState<T> {
   const { data, error, status } = result;
 
-  if (status === 'pending' || status === 'loading') {
+  if (status === 'pending') {
     return { status: 'loading', data: undefined, error: undefined };
   }
 

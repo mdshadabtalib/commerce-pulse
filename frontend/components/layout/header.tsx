@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import {
@@ -11,13 +10,11 @@ import {
   Search,
   Settings,
   Sun,
-  UserCircle,
   User as UserIcon,
   Bell,
   DollarSign,
   Menu,
   PanelLeft,
-  type LucideIcon,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn, getInitials } from '@/lib/utils';
@@ -127,7 +124,6 @@ export function Header({
   }, []);
 
   const activeOrg = currentOrg || organizations[0];
-  const currentCurrency = CURRENCIES.find((c) => c.code === currency) || CURRENCIES[0];
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {

@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 interface NavItem {
   title: string;
