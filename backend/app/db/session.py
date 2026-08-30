@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import AsyncGenerator, Optional
+from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
@@ -41,7 +41,7 @@ def _build_engine_from_url(database_url: str, *, pool_size: int = 20, max_overfl
     return engine
 
 
-def _build_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+def _build_session_factory(engine: AsyncEngine | None = None) -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(
         bind=engine,
         class_=AsyncSession,
@@ -52,7 +52,9 @@ def _build_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSessi
 
 
 _engine: Optional[AsyncEngine] = None
-async_session_factory: async_sessionmaker[AsyncSession]
+# Keep one factory object for the process. Router modules import this object at
+# startup, while the application's lifespan binds it to the active engine.
+async_session_factory: async_sessionmaker[AsyncSession] = _build_session_factory()
 
 
 def initialize_db(
@@ -61,11 +63,13 @@ def initialize_db(
     pool_size: int = 20,
     max_overflow: int = 10,
 ) -> tuple[AsyncEngine, async_sessionmaker[AsyncSession]]:
-    global _engine, async_session_factory
+    global _engine
     url = database_url or settings.DATABASE_URL
     try:
+        if _engine is not None:
+            return _engine, async_session_factory
         _engine = _build_engine_from_url(url, pool_size=pool_size, max_overflow=max_overflow)
-        async_session_factory = _build_session_factory(_engine)
+        async_session_factory.configure(bind=_engine)
         logger.info(
             "Database engine initialized.",
             extra={"pool_size": pool_size, "max_overflow": max_overflow},
@@ -107,6 +111,7 @@ async def shutdown_db() -> None:
         except Exception as exc:
             logger.warning("Error while disposing database engine: %s", exc)
         finally:
+            async_session_factory.configure(bind=None)
             _engine = None
 
 

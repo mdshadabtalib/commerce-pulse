@@ -208,7 +208,8 @@ class AuditLog(Base, OrganizationScopedMixin, TimestampMixin):
         JSON,
         nullable=True,
     )
-    metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(
+    metadata_: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        "metadata",
         JSON,
         nullable=True,
     )
@@ -634,7 +635,8 @@ class Report(Base, OrganizationScopedMixin, TimestampMixin):
         nullable=True,
         index=True,
     )
-    metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(
+    metadata_: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        "metadata",
         JSON,
         nullable=True,
     )
@@ -816,7 +818,8 @@ class ForecastRun(Base, TimestampMixin):
         Numeric(precision=12, scale=4),
         nullable=True,
     )
-    metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(
+    metadata_: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        "metadata",
         JSON,
         nullable=True,
     )
@@ -895,7 +898,8 @@ class Anomaly(Base, OrganizationScopedMixin, TimestampMixin):
         JSON,
         nullable=True,
     )
-    metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(
+    metadata_: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        "metadata",
         JSON,
         nullable=True,
     )
@@ -1213,7 +1217,8 @@ class Subscription(Base, TimestampMixin):
         JSON,
         nullable=True,
     )
-    metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(
+    metadata_: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        "metadata",
         JSON,
         nullable=True,
     )
@@ -1280,7 +1285,8 @@ class UsageRecord(Base, TimestampMixin):
         unique=True,
         index=True,
     )
-    metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(
+    metadata_: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        "metadata",
         JSON,
         nullable=True,
     )

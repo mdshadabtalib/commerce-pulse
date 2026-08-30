@@ -4,7 +4,7 @@ import enum
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Index, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

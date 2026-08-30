@@ -141,7 +141,7 @@ def _configure_middleware(app: FastAPI) -> None:
                 "request_id": request_id,
                 "method": method,
                 "path": path,
-                "query_string": str(request.query_string),
+                "query_string": request.url.query,
                 "client_ip": client_ip,
                 "user_agent": user_agent,
             },

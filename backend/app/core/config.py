@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
 from enum import Enum
 from typing import Annotated, Any, Literal
 
 from pydantic import (
+    AliasChoices,
     AnyHttpUrl,
     BeforeValidator,
     ConfigDict,
@@ -13,11 +15,16 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 def parse_cors_origins(v: Any) -> list[str]:
-    if isinstance(v, str) and not v.startswith("["):
+    if isinstance(v, str):
+        if v.startswith("["):
+            parsed = json.loads(v)
+            if not isinstance(parsed, list):
+                raise ValueError("CORS_ORIGINS JSON value must be an array.")
+            return [str(i) for i in parsed]
         return [i.strip() for i in v.split(",") if i.strip()]
     elif isinstance(v, list | tuple):
         return [str(i) for i in v]
@@ -45,7 +52,12 @@ class Settings(BaseSettings):
     APP_NAME: str = "CommercePulse"
     API_V1_PREFIX: str = "/api/v1"
     ENVIRONMENT: Environment = Environment.DEVELOPMENT
-    DEBUG: bool = False
+    # Avoid the generic DEBUG process variable. It is frequently set by other
+    # developer tooling and must not prevent CommercePulse from starting.
+    DEBUG: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("COMMERCE_PULSE_DEBUG"),
+    )
 
     DATABASE_URL: str = Field(
         default="postgresql+asyncpg://postgres:postgres@localhost:5432/commercepulse",
@@ -98,7 +110,10 @@ class Settings(BaseSettings):
     STRIPE_PRICE_ENTERPRISE: str = ""
     STRIPE_API_VERSION: str = "2024-06-20"
 
-    CORS_ORIGINS: Annotated[list[AnyHttpUrl], BeforeValidator(parse_cors_origins)] = Field(
+    # Environment variables commonly use a comma-separated list.  Disable the
+    # settings source's eager JSON decoding so ``parse_cors_origins`` can also
+    # accept that operationally convenient format.
+    CORS_ORIGINS: Annotated[list[AnyHttpUrl], NoDecode, BeforeValidator(parse_cors_origins)] = Field(
         default_factory=lambda: [],
     )
     CORS_ORIGINS_REGEX: str | None = None

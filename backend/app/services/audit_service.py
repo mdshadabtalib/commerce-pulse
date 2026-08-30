@@ -59,7 +59,7 @@ class AuditService:
                 ),
                 ip_address=ip_address,
                 user_agent=user_agent[:512] if user_agent else None,
-                metadata=metadata,
+                metadata_=metadata,
             )
             db.add(entry)
             await db.flush()

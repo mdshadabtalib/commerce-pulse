@@ -355,7 +355,7 @@ class AnomalyService:
             deviation_percentage=float(m.deviation_percentage) if m.deviation_percentage is not None else None,
             description=m.description,
             evidence=m.evidence,
-            metadata=m.metadata,
+            metadata=m.metadata_,
             acknowledged_by=m.acknowledged_by_id,
             acknowledged_at=m.acknowledged_at,
             resolved_by=m.resolved_by_id,

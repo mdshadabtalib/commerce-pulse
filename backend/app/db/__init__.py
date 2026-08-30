@@ -15,7 +15,7 @@ from .mixins import (
     TimestampMixin as TimestampMixinExport,
     utc_now as utc_now_export,
 )
-from .session import async_session_factory, async_session_factory as async_session, engine
+from .session import get_engine, get_sync_database_url, initialize_db, shutdown_db
 
 from ..models import (
     analytics,
@@ -95,9 +95,10 @@ __all__ = [
     "OrganizationScopedMixin",
     "CreatedByMixin",
     "utc_now",
-    "engine",
-    "async_session_factory",
-    "async_session",
+    "get_engine",
+    "get_sync_database_url",
+    "initialize_db",
+    "shutdown_db",
     "User",
     "UserStatus",
     "Organization",

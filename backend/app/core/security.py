@@ -16,7 +16,6 @@ from jose.exceptions import ExpiredSignatureError, JWTClaimsError
 from passlib.context import CryptContext
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from slowapi.wrappers import RedisStorage
 
 from .config import settings
 from .errors import (
@@ -279,11 +278,9 @@ class CSRFManager:
 def build_rate_limiter() -> Limiter:
     storage_uri = settings.REDIS_URL if settings.RATE_LIMIT_STORAGE == "redis" else None
     try:
-        if storage_uri and settings.RATE_LIMIT_STORAGE == "redis":
-            storage = RedisStorage(uri=storage_uri)
-            limiter = Limiter(key_func=get_remote_address, storage_uri=storage_uri, storage_backend=storage)
-        else:
-            limiter = Limiter(key_func=get_remote_address)
+        # SlowAPI delegates storage construction to its ``storage_uri``
+        # parameter.  It has no public ``RedisStorage`` wrapper.
+        limiter = Limiter(key_func=get_remote_address, storage_uri=storage_uri)
     except Exception as exc:
         logger.warning("Failed to initialize rate limiter storage, falling back to in-memory: %s", exc)
         limiter = Limiter(key_func=get_remote_address)
