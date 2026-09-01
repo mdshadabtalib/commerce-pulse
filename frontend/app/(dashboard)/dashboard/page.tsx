@@ -24,7 +24,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-import { formatCurrency, formatCompactNumber } from '@/lib/utils';
+import { formatCompactNumber } from '@/lib/utils';
+import { useCurrency } from '@/lib/currency-context';
 import { KPICard } from '@/components/dashboard/kpi-card';
 import { ChartWrapper } from '@/components/dashboard/chart-wrapper';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,7 @@ interface DashboardData {
 }
 
 export default function DashboardPage() {
+  const { formatAmount } = useCurrency();
   const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard', 'overview'],
     queryFn: async () => {
@@ -142,7 +144,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
           title="Total Revenue"
-          value={formatCurrency(kpis?.total_revenue || 0)}
+          value={formatAmount(kpis?.total_revenue || 0)}
           change={12.5}
           changeLabel="from last period"
           icon={DollarSign}

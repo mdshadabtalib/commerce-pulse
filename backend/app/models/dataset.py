@@ -198,7 +198,6 @@ class DatasetColumn(Base, TimestampMixin):
     )
 
     __table_args__ = (
-        Index("ix_dataset_columns_dataset", "dataset_id"),
         Index("ix_dataset_columns_dataset_name", "dataset_id", "name", unique=True),
     )
 

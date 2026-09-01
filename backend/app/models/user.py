@@ -80,6 +80,7 @@ class User(Base, TimestampMixin):
     organization_memberships: Mapped[list[OrganizationMember]] = relationship(
         "OrganizationMember",
         back_populates="user",
+        foreign_keys="[OrganizationMember.user_id]",
         cascade="all, delete-orphan",
     )
     created_organizations: Mapped[list[Organization]] = relationship(

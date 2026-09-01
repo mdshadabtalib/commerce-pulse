@@ -254,9 +254,12 @@ class AuthService:
         if not user:
             raise AuthenticationError(message="User not found.")
 
+        from ..models.user import User, UserStatus
         user_status = getattr(user, "status", None)
-        active_status = getattr(User, "STATUS_ACTIVE", "ACTIVE") if hasattr(User, "STATUS_ACTIVE") else "ACTIVE"
-        if user_status and user_status != active_status:
+        if user_status and user_status not in (
+            UserStatus.ACTIVE,
+            UserStatus.PENDING_VERIFICATION,
+        ):
             raise InactiveUserError()
 
         session_id = str(uuid4())

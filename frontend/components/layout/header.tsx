@@ -30,6 +30,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useCurrency, CURRENCIES } from '@/lib/currency-context';
 
 interface OrganizationOption {
   id: string | number;
@@ -49,16 +50,6 @@ interface UserDropdownProps {
   organizations?: OrganizationOption[];
   currentOrg?: OrganizationOption;
 }
-
-const CURRENCIES: { code: string; symbol: string; label: string }[] = [
-  { code: 'USD', symbol: '$', label: 'US Dollar' },
-  { code: 'EUR', symbol: '€', label: 'Euro' },
-  { code: 'GBP', symbol: '£', label: 'British Pound' },
-  { code: 'JPY', symbol: '¥', label: 'Japanese Yen' },
-  { code: 'CAD', symbol: 'C$', label: 'Canadian Dollar' },
-  { code: 'AUD', symbol: 'A$', label: 'Australian Dollar' },
-  { code: 'SGD', symbol: 'S$', label: 'Singapore Dollar' },
-];
 
 const DEFAULT_ORGS: OrganizationOption[] = [
   { id: 1, name: 'Acme Commerce', slug: 'acme', plan: 'Growth' },
@@ -114,9 +105,7 @@ export function Header({
   const router = useRouter();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
-  const [currency, setCurrency] = React.useState<string>(
-    process.env.NEXT_PUBLIC_CURRENCY_DEFAULT || 'USD'
-  );
+  const { currency, setCurrency: setCurrencyContext } = useCurrency();
   const [notifCount] = React.useState<number>(3);
 
   React.useEffect(() => {
@@ -275,7 +264,7 @@ export function Header({
                 <DropdownMenuItem
                   key={cur.code}
                   className="cursor-pointer justify-between"
-                  onClick={() => setCurrency(cur.code)}
+                  onClick={() => setCurrencyContext(cur.code)}
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-muted-foreground">

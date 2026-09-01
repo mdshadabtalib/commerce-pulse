@@ -13,7 +13,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel, Field
-from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from .core.config import settings
@@ -376,7 +375,6 @@ def create_app() -> FastAPI:
 
     limiter = build_rate_limiter()
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     @app.exception_handler(RateLimitExceeded)
     async def handle_ratelimit_slowapi(request: Request, exc: RateLimitExceeded):

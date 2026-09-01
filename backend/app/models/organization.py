@@ -79,6 +79,7 @@ class PermissionCategory(str, enum.Enum):
     BILLING = "billing"
     SETTINGS = "settings"
     REPORTS = "reports"
+    API = "api"
 
 
 class Organization(Base, TimestampMixin, SoftDeleteMixin):
@@ -168,6 +169,7 @@ class Organization(Base, TimestampMixin, SoftDeleteMixin):
     members: Mapped[list[OrganizationMember]] = relationship(
         "OrganizationMember",
         back_populates="organization",
+        foreign_keys="[OrganizationMember.organization_id]",
         cascade="all, delete-orphan",
     )
     roles: Mapped[list[Role]] = relationship(
@@ -233,7 +235,6 @@ class Organization(Base, TimestampMixin, SoftDeleteMixin):
 
     __table_args__ = (
         Index("ix_organizations_status_created_at", "status", "created_at"),
-        Index("ix_organizations_slug", "slug", unique=True),
     )
 
 
@@ -405,9 +406,7 @@ class Permission(Base, TimestampMixin):
         cascade="all, delete-orphan",
     )
 
-    __table_args__ = (
-        Index("ix_permissions_category", "category"),
-    )
+
 
 
 class RolePermission(Base):

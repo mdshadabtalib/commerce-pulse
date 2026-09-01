@@ -117,7 +117,7 @@ async def _fetch_user_from_token(db: AsyncSession, token_payload: dict[str, Any]
 
     is_active = True
     if hasattr(user, "status"):
-        is_active = user.status == UserStatus.ACTIVE
+        is_active = user.status in (UserStatus.ACTIVE, UserStatus.PENDING_VERIFICATION)
 
     active_member: Optional[OrganizationMember] = None
     for member in user.organization_memberships:
@@ -177,7 +177,7 @@ async def get_current_user(
             roles=payload.get("roles", []),
             permissions=payload.get("permissions", []),
         )
-    if user.id != user_id:
+    if str(user.id) != str(user_id):
         raise AuthenticationError(message="Token subject does not match stored user.")
     _set_context(request, str(user.id), str(user.organization_id) if user.organization_id else None)
     return user

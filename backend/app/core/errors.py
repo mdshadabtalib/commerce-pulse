@@ -102,7 +102,7 @@ class ConflictError(CommercePulseError):
 
 
 class ValidationError(CommercePulseError):
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    status_code = status.HTTP_422_UNPROCESSABLE_CONTENT if hasattr(status, "HTTP_422_UNPROCESSABLE_CONTENT") else 422
     error_code = "VALIDATION_ERROR"
     message = "The provided data was invalid."
 
@@ -240,7 +240,7 @@ class ErrorHandlerRegistry(Generic[T]):
                 status.HTTP_403_FORBIDDEN: "FORBIDDEN",
                 status.HTTP_404_NOT_FOUND: "NOT_FOUND",
                 status.HTTP_405_METHOD_NOT_ALLOWED: "METHOD_NOT_ALLOWED",
-                status.HTTP_422_UNPROCESSABLE_ENTITY: "UNPROCESSABLE_ENTITY",
+                422: "UNPROCESSABLE_ENTITY",
                 status.HTTP_429_TOO_MANY_REQUESTS: "TOO_MANY_REQUESTS",
                 status.HTTP_500_INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
             }
@@ -274,12 +274,12 @@ class ErrorHandlerRegistry(Generic[T]):
                     }
                 )
             return JSONResponse(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 content=jsonable_encoder(
                     format_error_response(
                         error_code="VALIDATION_ERROR",
                         message="Request validation failed. Please check the provided data.",
-                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        status_code=422,
                         request_id=request_id,
                         details=formatted_errors,
                     )

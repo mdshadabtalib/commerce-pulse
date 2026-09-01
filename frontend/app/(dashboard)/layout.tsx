@@ -2,13 +2,14 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+import { QueryClientProvider, QueryClient } from '@tantml:react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'sonner';
 
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { useAuth } from '@/lib/auth';
+import { CurrencyProvider } from '@/lib/currency-context';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,52 +53,54 @@ export default function DashboardLayout({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex h-screen overflow-hidden bg-background">
-        {/* Mobile Sidebar Overlay */}
-        {mobileSidebarOpen && (
+      <CurrencyProvider>
+        <div className="flex h-screen overflow-hidden bg-background">
+          {/* Mobile Sidebar Overlay */}
+          {mobileSidebarOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+              onClick={() => setMobileSidebarOpen(false)}
+            />
+          )}
+
+          {/* Sidebar - Desktop */}
+          <div className="hidden lg:block">
+            <Sidebar defaultCollapsed={sidebarCollapsed} />
+          </div>
+
+          {/* Sidebar - Mobile */}
           <div
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-        )}
+            className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 lg:hidden ${
+              mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+          >
+            <Sidebar />
+          </div>
 
-        {/* Sidebar - Desktop */}
-        <div className="hidden lg:block">
-          <Sidebar defaultCollapsed={sidebarCollapsed} />
+          {/* Main Content */}
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <Header
+              user={{
+                id: user.id,
+                full_name: user.full_name || user.email,
+                email: user.email,
+                avatar_url: user.avatar_url,
+              }}
+              onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            />
+
+            <main className="flex-1 overflow-y-auto overflow-x-hidden bg-background">
+              <div className="container mx-auto p-4 lg:p-6 max-w-[1600px]">
+                {children}
+              </div>
+            </main>
+          </div>
         </div>
 
-        {/* Sidebar - Mobile */}
-        <div
-          className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 lg:hidden ${
-            mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-          <Sidebar />
-        </div>
-
-        {/* Main Content */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <Header
-            user={{
-              id: user.id,
-              full_name: user.full_name || user.email,
-              email: user.email,
-              avatar_url: user.avatar_url,
-            }}
-            onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-          />
-
-          <main className="flex-1 overflow-y-auto overflow-x-hidden bg-background">
-            <div className="container mx-auto p-4 lg:p-6 max-w-[1600px]">
-              {children}
-            </div>
-          </main>
-        </div>
-      </div>
-
-      <Toaster richColors position="top-right" />
-      <ReactQueryDevtools initialIsOpen={false} />
+        <Toaster richColors position="top-right" />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </CurrencyProvider>
     </QueryClientProvider>
   );
 }

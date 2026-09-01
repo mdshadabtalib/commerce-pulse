@@ -12,9 +12,30 @@ from ..core.logging import get_logger
 logger = get_logger(__name__)
 
 
+def _is_sqlite(url: str) -> bool:
+    """Return True if the database URL targets SQLite."""
+    return "sqlite" in url.lower()
+
+
 def _build_engine_from_url(database_url: str, *, pool_size: int = 20, max_overflow: int = 10, **kwargs: object) -> AsyncEngine:
     connect_args: dict[str, object] = {}
-    if "+asyncpg" in database_url:
+    engine_kwargs: dict[str, object] = {
+        "pool_pre_ping": True,
+        "future": True,
+        "echo": False,
+        "echo_pool": False,
+    }
+
+    if _is_sqlite(database_url):
+        # SQLite does not support pool_size / max_overflow and only allows
+        # SERIALIZABLE, READ UNCOMMITTED, or AUTOCOMMIT isolation levels.
+        connect_args = {"check_same_thread": False}
+        engine_kwargs["connect_args"] = connect_args
+        engine_kwargs["execution_options"] = {
+            "isolation_level": "SERIALIZABLE",
+        }
+    elif "+asyncpg" in database_url:
+        # PostgreSQL via asyncpg
         connect_args = {
             "server_settings": {
                 "jit": "off",
@@ -23,21 +44,21 @@ def _build_engine_from_url(database_url: str, *, pool_size: int = 20, max_overfl
             },
             "command_timeout": 30,
         }
-    engine = create_async_engine(
-        database_url,
-        pool_pre_ping=True,
-        pool_recycle=3600,
-        pool_size=pool_size,
-        max_overflow=max_overflow,
-        future=True,
-        echo=False,
-        echo_pool=False,
-        connect_args=connect_args,
-        execution_options={
+        engine_kwargs["pool_size"] = pool_size
+        engine_kwargs["max_overflow"] = max_overflow
+        engine_kwargs["pool_recycle"] = 3600
+        engine_kwargs["connect_args"] = connect_args
+        engine_kwargs["execution_options"] = {
             "isolation_level": "READ COMMITTED",
-        },
-        **kwargs,
-    )
+        }
+    else:
+        # Other async drivers (e.g. asyncpg, aiosqlite variant, etc.)
+        engine_kwargs["pool_size"] = pool_size
+        engine_kwargs["max_overflow"] = max_overflow
+        engine_kwargs["pool_recycle"] = 3600
+        engine_kwargs["connect_args"] = connect_args
+
+    engine = create_async_engine(database_url, **engine_kwargs, **kwargs)
     return engine
 
 
@@ -57,6 +78,24 @@ _engine: Optional[AsyncEngine] = None
 async_session_factory: async_sessionmaker[AsyncSession] = _build_session_factory()
 
 
+def _auto_create_sqlite_tables(engine: AsyncEngine) -> None:
+    """Create all tables automatically when using SQLite (local dev)."""
+    from sqlalchemy import create_engine
+
+    sync_url = str(engine.url).replace("+aiosqlite", "").replace("sqlite+aiosqlite", "sqlite")
+    sync_engine = create_engine(sync_url, connect_args={"check_same_thread": False})
+
+    from .base import Base  # noqa: F811 – import all model metadata
+    # Ensure every model module is loaded so Base.metadata contains all tables.
+    from ..models import (  # noqa: F401
+        analytics, customer, dataset, order, organization, product, user,
+    )
+
+    Base.metadata.create_all(bind=sync_engine)
+    sync_engine.dispose()
+    logger.info("SQLite tables auto-created via Base.metadata.create_all().")
+
+
 def initialize_db(
     *,
     database_url: Optional[str] = None,
@@ -74,6 +113,11 @@ def initialize_db(
             "Database engine initialized.",
             extra={"pool_size": pool_size, "max_overflow": max_overflow},
         )
+
+        # Auto-create tables for SQLite (development convenience)
+        if _is_sqlite(url):
+            _auto_create_sqlite_tables(_engine)
+
         return _engine, async_session_factory
     except Exception as exc:
         logger.critical("Failed to initialize database engine: %s", exc)

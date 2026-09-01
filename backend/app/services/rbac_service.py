@@ -29,28 +29,28 @@ class PermissionDef:
 
 class RBACService:
     PERMISSIONS: list[PermissionDef] = [
-        PermissionDef("org:read", "Read Organization", "Admin", "View organization details"),
-        PermissionDef("org:update", "Update Organization", "Admin", "Update organization settings"),
-        PermissionDef("org:delete", "Delete Organization", "Admin", "Delete the organization"),
-        PermissionDef("users:invite", "Invite Users", "Admin", "Invite new users to the organization"),
-        PermissionDef("users:manage", "Manage Users", "Admin", "Manage organization members"),
-        PermissionDef("roles:manage", "Manage Roles", "Admin", "Create and manage custom roles"),
-        PermissionDef("billing:manage", "Manage Billing", "Admin", "Manage billing and subscriptions"),
-        PermissionDef("integrations:manage", "Manage Integrations", "Admin", "Configure third-party integrations"),
-        PermissionDef("analytics:view", "View Analytics", "Analytics", "View analytics dashboards"),
-        PermissionDef("dashboards:create", "Create Dashboards", "Analytics", "Create custom dashboards"),
-        PermissionDef("dashboards:manage", "Manage Dashboards", "Analytics", "Manage all dashboards"),
-        PermissionDef("data:import", "Import Data", "Data", "Import datasets"),
-        PermissionDef("data:manage", "Manage Data", "Data", "Manage datasets and columns"),
-        PermissionDef("data:export", "Export Data", "Data", "Export datasets"),
-        PermissionDef("reports:view", "View Reports", "Reports", "View generated reports"),
-        PermissionDef("reports:create", "Create Reports", "Reports", "Create custom reports"),
-        PermissionDef("reports:manage", "Manage Reports", "Reports", "Manage all reports"),
-        PermissionDef("reports:scheduled", "Scheduled Reports", "Reports", "Configure scheduled report deliveries"),
-        PermissionDef("settings:read", "Read Settings", "Settings", "View organization settings"),
-        PermissionDef("settings:manage", "Manage Settings", "Settings", "Update organization settings"),
-        PermissionDef("api_keys:create", "Create API Keys", "API", "Create API keys for integrations"),
-        PermissionDef("api_keys:manage", "Manage API Keys", "API", "Revoke and manage API keys"),
+        PermissionDef("org:read", "Read Organization", "admin", "View organization details"),
+        PermissionDef("org:update", "Update Organization", "admin", "Update organization settings"),
+        PermissionDef("org:delete", "Delete Organization", "admin", "Delete the organization"),
+        PermissionDef("users:invite", "Invite Users", "admin", "Invite new users to the organization"),
+        PermissionDef("users:manage", "Manage Users", "admin", "Manage organization members"),
+        PermissionDef("roles:manage", "Manage Roles", "admin", "Create and manage custom roles"),
+        PermissionDef("billing:manage", "Manage Billing", "admin", "Manage billing and subscriptions"),
+        PermissionDef("integrations:manage", "Manage Integrations", "admin", "Configure third-party integrations"),
+        PermissionDef("analytics:view", "View Analytics", "analytics", "View analytics dashboards"),
+        PermissionDef("dashboards:create", "Create Dashboards", "analytics", "Create custom dashboards"),
+        PermissionDef("dashboards:manage", "Manage Dashboards", "analytics", "Manage all dashboards"),
+        PermissionDef("data:import", "Import Data", "data", "Import datasets"),
+        PermissionDef("data:manage", "Manage Data", "data", "Manage datasets and columns"),
+        PermissionDef("data:export", "Export Data", "data", "Export datasets"),
+        PermissionDef("reports:view", "View Reports", "reports", "View generated reports"),
+        PermissionDef("reports:create", "Create Reports", "reports", "Create custom reports"),
+        PermissionDef("reports:manage", "Manage Reports", "reports", "Manage all reports"),
+        PermissionDef("reports:scheduled", "Scheduled Reports", "reports", "Configure scheduled report deliveries"),
+        PermissionDef("settings:read", "Read Settings", "settings", "View organization settings"),
+        PermissionDef("settings:manage", "Manage Settings", "settings", "Update organization settings"),
+        PermissionDef("api_keys:create", "Create API Keys", "api", "Create API keys for integrations"),
+        PermissionDef("api_keys:manage", "Manage API Keys", "api", "Revoke and manage API keys"),
     ]
 
     _instance: "RBACService | None" = None
@@ -72,17 +72,26 @@ class RBACService:
         return result
 
     async def populate_default_permissions(self, db: AsyncSession) -> None:
-        from ..models.organization import Permission as PermissionModel
+        from ..models.organization import Permission as PermissionModel, PermissionCategory
 
-        values = [
-            {"slug": p.slug, "name": p.name, "category": p.category, "description": p.description}
+        stmt = select(PermissionModel.slug)
+        result = await db.execute(stmt)
+        existing_slugs = set(result.scalars().all())
+
+        new_permissions = [
+            PermissionModel(
+                slug=p.slug,
+                name=p.name,
+                category=PermissionCategory(p.category),
+                description=p.description,
+            )
             for p in self.PERMISSIONS
+            if p.slug not in existing_slugs
         ]
-        stmt = insert(PermissionModel).values(values)
-        stmt = stmt.on_conflict_do_nothing(index_elements=["slug"])
-        await db.execute(stmt)
-        await db.flush()
-        logger.info("Default permissions populated (idempotent).", extra={"count": len(values)})
+        if new_permissions:
+            db.add_all(new_permissions)
+            await db.flush()
+        logger.info("Default permissions populated (idempotent).", extra={"new_count": len(new_permissions)})
 
     async def create_default_roles_for_org(self, db: AsyncSession, org_id: UUID) -> None:
         from ..models.organization import Permission as PermissionModel, Role, RolePermission

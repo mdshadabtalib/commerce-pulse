@@ -48,6 +48,13 @@ class AuditService:
                     if not isinstance(organization, UUID)
                     else organization
                 )
+            elif user is not None and hasattr(user, "organization_memberships"):
+                try:
+                    memberships = getattr(user, "organization_memberships", []) or []
+                    if memberships:
+                        org_id = getattr(memberships[0], "organization_id", None)
+                except Exception:
+                    pass
 
             entry = AuditLog(
                 action=action,
@@ -68,7 +75,6 @@ class AuditService:
                 "Failed to write audit log. Swallowing to preserve request flow.",
                 extra={
                     "action": action,
-                    "user_id": str(getattr(user, "id", None)) if user else None,
                     "error": str(exc),
                     "error_type": type(exc).__name__,
                 },

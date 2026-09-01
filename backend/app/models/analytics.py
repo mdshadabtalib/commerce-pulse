@@ -162,9 +162,15 @@ class APIKey(Base, OrganizationScopedMixin, TimestampMixin):
     )
 
 
-class AuditLog(Base, OrganizationScopedMixin, TimestampMixin):
+class AuditLog(Base, TimestampMixin):
     __tablename__ = "audit_logs"
 
+    organization_id: Mapped[Optional[Any]] = mapped_column(
+        PgUUID(as_uuid=True),
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
     user_id: Mapped[Optional[Any]] = mapped_column(
         PgUUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),

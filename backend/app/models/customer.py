@@ -112,7 +112,6 @@ class Customer(Base, OrganizationScopedMixin, TimestampMixin):
         UniqueConstraint("organization_id", "external_id", name="uq_customer_org_external_id"),
         Index("ix_customers_organization_created_at", "organization_id", "created_at"),
         Index("ix_customers_organization_email", "organization_id", "email"),
-        Index("ix_customers_segment", "segment_id"),
     )
 
 
@@ -175,6 +174,5 @@ class Address(Base, TimestampMixin):
     )
 
     __table_args__ = (
-        Index("ix_addresses_organization_id", "organization_id"),
         Index("ix_addresses_customer_default", "customer_id", "is_default"),
     )
